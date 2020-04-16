@@ -272,10 +272,20 @@ public class MainUI extends BasePanel implements IMapHandler {
         layers.add(buttonPanel, 0);
         layers.add(displayPanel, 0);
         layers.add(map, -1);
-        Border line1 = newLineBorder(newColor(60,60,60),2);
-        Border line2 = newLineBorder(newColor(0,0,0),8);
+ //       Border line1 = newLineBorder(newColor(60,60,60),2);
+  //      Border line2 = newLineBorder(newColor(0,0,0),8);
+  //      Border compound1 = BorderFactory.createCompoundBorder(line2, line1);
+  //      setBorder(compound1);
+        Border line1 = newLineBorder(newColor(192,192,192),4);
+        Border line2 = newLineBorder(newColor(160,160,160),4);
+        Border line3 = newLineBorder(newColor(128,128,128),4);
+        Border line4 = newLineBorder(newColor(96,96,96),4);
+        Border line5 = newLineBorder(newColor(80,80,80),4);
         Border compound1 = BorderFactory.createCompoundBorder(line2, line1);
-        setBorder(compound1);
+        Border compound2 = BorderFactory.createCompoundBorder(line3, compound1);
+        Border compound3 = BorderFactory.createCompoundBorder(line4, compound2);
+        Border compound4 = BorderFactory.createCompoundBorder(line5, compound3);
+        setBorder(compound4);
         setOpaque(false);
     }
     public boolean enableButtons()   { return true; }
