@@ -57,12 +57,12 @@ public class RandomEventSpaceAmoeba implements Base, Serializable, RandomEvent {
         StarSystem targetSystem = random(emp.allColonizedSystems());
         empId = emp.id;
         sysId = targetSystem.id;
-        turnCount = 2;
+        turnCount = 3;
         galaxy().events().addActiveEvent(this);
     }
     @Override
     public void nextTurn() {
-        if (turnCount == 2) 
+        if (turnCount == 3) 
             approachSystem();     
         else if (turnCount == 0) 
             enterSystem();
@@ -111,6 +111,9 @@ public class RandomEventSpaceAmoeba implements Base, Serializable, RandomEvent {
                 GNNNotification.notifyRandomEvent(notificationText("EVENT_SPACE_AMOEBA_2", targetSystem.empire()), "GNN_Event_Amoeba");
             targetSystem.empire().lastAttacker(monster);
             targetSystem.planet().degradeToType(PlanetType.BARREN);
+            float prevFact = col.industry().factories();
+            col.industry().factories(prevFact*0.1f);
+            targetSystem.planet().resetWaste();
             col.destroy();
         }
         moveToNextSystem(); 
@@ -156,7 +159,7 @@ public class RandomEventSpaceAmoeba implements Base, Serializable, RandomEvent {
     
         log("Space Amoeba moving to system: "+nextSysId);
         StarSystem nextSys = galaxy().system(nextSysId);
-        turnCount = (int) Math.ceil(3*nextSys.distanceTo(targetSystem));
+        turnCount = (int) Math.ceil(1.5*nextSys.distanceTo(targetSystem));
         sysId = nextSys.id;        
     }
     private String notificationText(String key, Empire emp)    {

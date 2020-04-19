@@ -93,7 +93,7 @@ public class RandomEventSupernova implements Base, Serializable, RandomEvent, Co
         affectColony();
         turnCount++;
 
-        if ((turnCount % 5 == 0) && galaxy().empire(empId).isPlayer())
+        if ((turnCount % 5 == 0) && (player().id == empId))
             GNNNotification.notifyRandomEvent(continuingText(), "GNN_Event_Supernova");
     }
     private void affectColony() {
@@ -111,10 +111,11 @@ public class RandomEventSupernova implements Base, Serializable, RandomEvent, Co
         // if colony changed hands instead
         // transfer project to  new empire
         Empire sysEmp = sys.empire();
-        if (sysEmp.id != empId) {
-            empId = sysEmp.id;
+        int sysEmpId = id(sysEmp);
+        if (sysEmpId != empId) {
+            empId = sysEmpId;
             researchRemaining = researchNeeded;
-            if (sysEmp.isPlayer())
+            if (sysEmp == player())
                 GNNNotification.notifyRandomEvent(notificationText(), "GNN_Event_Supernova");
         }
     }

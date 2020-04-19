@@ -52,11 +52,6 @@ public class CombatStackSpaceAmoeba extends CombatStack {
     @Override
     public boolean ignoreRepulsors()    { return true; }
     @Override
-    public void attemptToHeal()         { 
-        float healAmt = 0.25f * (maxHits - hits);
-        hits = min(maxHits, hits+healAmt);
-    };
-    @Override
     public boolean canAttack(CombatStack target)  { 
         if (target.destroyed()) 
             return false;
@@ -77,12 +72,14 @@ public class CombatStackSpaceAmoeba extends CombatStack {
         if (!st.isShip() && !st.isColony())
             return;
         
-        st.num = 0;
         // only eats ships
         if (st.isShip()) {
             st.drawFadeOut(.025f);
             st.mgr.destroyStack(st); 
         }
+
+        st.num = 0;
+
         // stop and enjoy the meal
         move = 0;
         if (st.mgr.ui != null)

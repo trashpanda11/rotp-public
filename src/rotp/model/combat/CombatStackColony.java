@@ -148,6 +148,8 @@ public class CombatStackColony extends CombatStack {
     public boolean canTeleport()     { return false; }
     @Override
     public boolean currentWeaponCanAttack(CombatStack target) {
+        if (target == null)
+            return false;
         if (target.inStasis || missileFired || (num == 0))
             return false;
 
@@ -163,6 +165,10 @@ public class CombatStackColony extends CombatStack {
     }
     @Override
     public void fireWeapon(CombatStack newTarget, int i) {
+        fireWeapon(newTarget, i, false);
+    }
+    @Override
+    public void fireWeapon(CombatStack newTarget, int i, boolean b) {
         if (missileFired)
             return;
         target = newTarget;

@@ -174,7 +174,7 @@ public class AIDiplomat implements Base, Diplomat {
         if (empire.isPlayer()) {
             EmpireView v = diplomat.viewForEmpire(empire);
             // 1st, create the reply for the AI asking the player for the tech
-            DiplomaticReply reply = v.accept(DialogueManager.OFFER_TECH_EXCHANGE);
+            DiplomaticReply reply = v.otherView().accept(DialogueManager.OFFER_TECH_EXCHANGE);
             // decode the [tech] field in the reply text
             reply.decode("[tech]", tech.name());
             // 2nd, create the counter-offer menu that the player would present to the AI
@@ -551,9 +551,12 @@ public class AIDiplomat implements Base, Diplomat {
 
         v.embassy().resetPactTimer();
         
+        int erraticLeaderPenalty = requestor.leader().isErratic() ? -40 : 0;
+ 
         float adjustedRelations = v.embassy().otherRelations();
         adjustedRelations += empire.leader().acceptPactMod();
         adjustedRelations += requestor.race().diplomacyBonus();
+        adjustedRelations += erraticLeaderPenalty;
         if (adjustedRelations < 20)
             return refuseOfferPact(requestor);
 
@@ -622,12 +625,14 @@ public class AIDiplomat implements Base, Diplomat {
             if (!requestor.atWarWith(enemy.id) && requestor.inEconomicRange(enemy.id))
                 joinWarBonus = 30;
         }
+        int erraticLeaderPenalty = requestor.leader().isErratic() ? -40 : 0;
  
         // if we don't like the requestor well enough, refuse now
         float adjustedRelations = v.embassy().otherRelations();
         adjustedRelations += empire.leader().acceptAllianceMod();
         adjustedRelations += requestor.race().diplomacyBonus();
         adjustedRelations += joinWarBonus;
+        adjustedRelations += erraticLeaderPenalty;
         if (adjustedRelations < 60)
             return refuseOfferAlliance(requestor);
         
@@ -864,7 +869,6 @@ public class AIDiplomat implements Base, Diplomat {
         
         float adjustedRelations = v.embassy().otherRelations();
         adjustedRelations += empire.leader().preserveTreatyMod();
-        
         return adjustedRelations < 20;
     }
     private boolean decidedToBreakPact(EmpireView view) {
@@ -1023,13 +1027,16 @@ public class AIDiplomat implements Base, Diplomat {
         log("cumulative severity: "+cumulativeSeverity);
         view.embassy().warningSent();
         
-        // UGH.. this was done to avoid adding a new var and breaking saves
-        if (maxIncident instanceof ExpansionIncident) 
-            view.embassy().giveExpansionWarning();
-        
-        if (view.empire().isPlayer())
+        // if we are warning player, send a notification
+        if (view.empire().isPlayer()) {
+            // we will only give one expansion warning
+            if (maxIncident instanceof ExpansionIncident) {
+                if (view.embassy().gaveExpansionWarning())
+                    return true;
+                view.embassy().giveExpansionWarning();
+            }
             DiplomaticNotification.create(view, maxIncident, maxIncident.warningMessageId());
-        cumulativeSeverity = 0;
+        }
         return true;
     }
     private boolean decidedToDeclareWar(EmpireView view) {
@@ -1303,9 +1310,6 @@ public class AIDiplomat implements Base, Diplomat {
     }
     @Override
     public void noticeExpansionIncidents(EmpireView view, List<DiplomaticIncident> events) {
-        if (view.embassy().gaveExpansionWarning()) 
-            return;
-        
         int numberSystems = view.empire().numSystemsForCiv(view.empire());
         if (numberSystems < 6)
             return;
@@ -1315,7 +1319,6 @@ public class AIDiplomat implements Base, Diplomat {
         int numCivs = gal.numActiveEmpires();
 
         int maxSystemsWithoutPenalty = max(5, (allSystems /numCivs)+1);
-        int adj = 1;
 
         if (numberSystems > maxSystemsWithoutPenalty)
             events.add(ExpansionIncident.create(view,numberSystems, maxSystemsWithoutPenalty));
